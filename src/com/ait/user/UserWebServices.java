@@ -1,5 +1,7 @@
 package com.ait.user;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -15,6 +17,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Path("/user")
 @Stateless
@@ -22,7 +25,7 @@ import javax.ws.rs.core.Response;
 public class UserWebServices {
 
 	@EJB
-	private UserDAO userDAO;
+	private UserDAO userDAO = new UserDAO();
 
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -32,6 +35,15 @@ public class UserWebServices {
 		System.out.println("....got users....");
 		System.out.println(users.size());
 		return Response.status(200).entity(users).build();
+	}
+
+	@POST
+	@Path("/login/")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	public Response findUserNamesPasswords(LoginDetails details) throws MalformedURLException {
+		System.out.println("findUserNamesPasswords: " + details.getUsername() + " " + details.getPassword());
+		URL userUrl = userDAO.successfulLoginUrl(details.getUsername(), details.getPassword());
+		return Response.status(200).entity(userUrl).build();
 	}
 
 	@GET
@@ -72,6 +84,29 @@ public class UserWebServices {
 	public Response deleteUser(@PathParam("empId") int empId) {
 		userDAO.delete(empId);
 		return Response.status(204).build();
+	}
+
+}
+
+@XmlRootElement
+class LoginDetails {
+	private String username;
+	private String password;
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
